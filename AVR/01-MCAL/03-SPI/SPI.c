@@ -1,0 +1,48 @@
+#include "SPI.h"
+
+/*SPI IS ONLY ONE MASTER AND MULTIPLE SLAVES*/
+void SPI_MASTER_INIT()
+{
+	DIO_Vid_Set_PIN_DIRICTION(PB5 , PORTB , OUTPUT);/*SETTING MOSI PIN AS OUTPUT FOR MASTER*/
+	DIO_Vid_Set_PIN_DIRICTION(PB4 , PORTB , OUTPUT);/*SETTING SLAVE SELECT(SS) PIN AS OUTPUT FOR MASTER*/
+	DIO_Vid_Set_PIN_DIRICTION(PB6 , PORTB , INPUT);/*SETTING MISO PIN AS INPUT FOR MASTER*/
+	DIO_Vid_Set_PIN_DIRICTION(PB7 , PORTB ,OUTPUT);/*SETTING SCK PIN AS OUTPUT FOR MASTER*/
+	/*CLOCK IS GENERATED JUST FROM MASTER*/
+	SPCR_REG |=(1<<SPE) | (1<<MSTR);/*enabling  SPI*/ /*writing 1 into MSTR to Enable master mode*/
+	/*setting SPR1 & SPR0 to 0 'CLOCK = Fosc/4' by default*/
+	
+	//SET_BIT(SPCR_REG,SPE);
+	//SET_BIT(SPCR_REG,MSTR);
+}
+
+void SPI_SLAVE_INIT()
+{
+	DIO_Vid_Set_PIN_DIRICTION(PB5 , PORTB , INPUT);/*SETTING MOSI PIN AS INPUT FOR SLAVE*/
+	DIO_Vid_Set_PIN_DIRICTION(PB4 , PORTB , INPUT);/*SETTING SLAVE SELECT(SS) PIN AS INPUT FOR SLAVE*/
+	DIO_Vid_Set_PIN_DIRICTION(PB6 , PORTB , OUTPUT);/*SETTING MISO PIN AS OUTPUT FOR SLAVE*/
+	DIO_Vid_Set_PIN_DIRICTION(PB7 , PORTB , INPUT);/*SETTING SCK PIN AS INPUT FOR SLAVE*/
+	SPCR_REG |=(1<<SPE) | (1<<SPIE);/*ENABLIGN SPI*/ /*ENABLING SPI INTERRUPT*/
+	// SET_BIT(SPCR_REG,SPE);
+	//SET_BIT(SPCR_REG,SPIE);
+	/*writing 0 into MSTR to Enable slave mode*/
+}
+void SPI_SEND(uint8 data)
+{
+	SPDR_REG = data; /*putting data sent in SPDR REGSTER*/
+	while(BIT_IS_CLEAR(SPSR_REG,SPIF));/*wait until the byte is completely sent*/
+}
+uint8 SPI_RECEIVE()
+{
+	while(BIT_IS_CLEAR(SPSR_REG,SPIF));/*wait until receive byte the SPIF flag will be set to 1*/
+	return SPDR_REG; /* returning the byte received*/
+}
+void SPI_SEND_STRING(char *data)
+{
+	uint8 i = 0 ;/*COUNTER FOR data CHAR ARRAY*/
+	/*SENDING data STRING CHAR BY CAHR TILL REACHS THE END \0*/
+	while(data[i] != 0 )
+	{
+		SPI_SEND(data[i]);
+		i++;
+	}
+}
