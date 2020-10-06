@@ -1,5 +1,5 @@
-#ifndef Keybad
-#define Keybad
+#ifndef Keybad_H
+#define Keybad_H
 
 
 #define KEYBAD_PORT      PORTC
@@ -8,6 +8,6 @@
 
 #include "DIO_INIT.h"
 
-uint8 Keybad_Get_pressed_key();
+uint8 Keybad_Get_pressed_key(void);
 
-#endif
+#endif /*Keybad_H*/
